@@ -1,7 +1,7 @@
 "use client";
 
 import StoreHeader from "../StoreHeader";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,7 +22,7 @@ type Product = {
   is_best_seller: boolean;
 };
 
-export default function ShopPage() {
+function ShopContent() {
   const searchParams = useSearchParams();
 
   const selectedCategory = searchParams.get("category");
@@ -161,17 +161,13 @@ export default function ShopPage() {
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       <span className="font-semibold">
                         ₹
-                        {Number(
-                          product.price
-                        ).toLocaleString("en-IN")}
+                        {Number(product.price).toLocaleString("en-IN")}
                       </span>
 
                       {product.mrp > product.price && (
                         <span className="text-sm text-[#9f8c85] line-through">
                           ₹
-                          {Number(
-                            product.mrp
-                          ).toLocaleString("en-IN")}
+                          {Number(product.mrp).toLocaleString("en-IN")}
                         </span>
                       )}
                     </div>
@@ -183,5 +179,25 @@ export default function ShopPage() {
         </div>
       </main>
     </>
+  );
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense
+      fallback={
+        <>
+          <StoreHeader />
+
+          <main className="min-h-screen bg-[#fffaf8] px-5 py-16 text-[#2a1f1d]">
+            <div className="mx-auto max-w-7xl py-20 text-center text-[#6e5b55]">
+              Loading products...
+            </div>
+          </main>
+        </>
+      }
+    >
+      <ShopContent />
+    </Suspense>
   );
 }
