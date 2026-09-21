@@ -18,6 +18,11 @@ export const metadata: Metadata = {
   title: "The Stud House Elite",
   description:
     "Premium fashion jewellery including studs, earrings, necklaces and bracelets.",
+  icons: {
+    icon: "/images/logo/studlogo.png",
+    shortcut: "/images/logo/studlogo.png",
+    apple: "/images/logo/studlogo.png",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
