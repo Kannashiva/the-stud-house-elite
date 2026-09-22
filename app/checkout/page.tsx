@@ -15,7 +15,7 @@ declare global {
 export default function CheckoutPage() {
   const router = useRouter();
 
-  const { cart, subtotal } = useCart();
+  const { cart, subtotal, clearCart } = useCart();
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -130,9 +130,8 @@ export default function CheckoutPage() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        amount: subtotal,
-        receipt: `order_${result.order.id}`,
-      }),
+  orderId: result.order.id,
+}),
     });
 
     const paymentResult = await paymentResponse.json();
@@ -196,12 +195,14 @@ export default function CheckoutPage() {
         }
 
         console.log(
-          "Payment verified successfully"
-        );
+  "Payment verified successfully"
+);
 
-        router.push(
-          `/order-success?order=${result.order.id}`
-        );
+clearCart();
+
+router.push(
+  `/order-success?order=${result.order.id}`
+);
       },
 
       prefill: {

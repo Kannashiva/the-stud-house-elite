@@ -6,6 +6,11 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+type CartItemInput = {
+  id: string | number;
+  quantity: number;
+};
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -19,84 +24,233 @@ export async function POST(request: Request) {
       state,
       pincode,
       landmark,
-      total_amount,
       items,
     } = body;
 
-    const { data: order, error } = await supabaseAdmin
-      .from("orders")
-      .insert({
-        customer_name,
-        mobile,
-        email,
-        address,
-        city,
-        state,
-        pincode,
-        landmark,
-        total_amount,
-        payment_status: "pending",
-        order_status: "pending",
-      })
-      .select()
-      .single();
+    // Basic customer validation
+    if (
+      !customer_name ||
+      !mobile ||
+      !email ||
+      !address ||
+      !city ||
+      !state ||
+      !pincode
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Missing required customer details.",
+        },
+        { status: 400 }
+      );
+    }
 
-    if (error) {
-      console.error("Supabase order error:", error);
+    if (!Array.isArray(items) || items.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Cart is empty.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate cart quantities and normalize product IDs
+    const normalizedItems: CartItemInput[] = items.map(
+      (item: CartItemInput) => ({
+        id: Number(item.id),
+        quantity: Number(item.quantity),
+      })
+    );
+
+    for (const item of normalizedItems) {
+      if (
+        !Number.isInteger(Number(item.id)) ||
+        !Number.isInteger(item.quantity) ||
+        item.quantity < 1
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Invalid cart item.",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    const productIds = [
+      ...new Set(
+        normalizedItems.map((item) => Number(item.id))
+      ),
+    ];
+
+    // Fetch real product data from database
+    const { data: products, error: productsError } =
+      await supabaseAdmin
+        .from("products")
+        .select(
+          "id, name, price, stock, is_active"
+        )
+        .in("id", productIds);
+
+    if (productsError) {
+      console.error(
+        "Product validation error:",
+        productsError
+      );
 
       return NextResponse.json(
         {
           success: false,
-          error: error.message,
+          error: "Unable to validate products.",
         },
         { status: 500 }
       );
     }
 
-    const orderItems = items.map(
-  (item: {
-    id: string;
-    name: string;
-    price: number;
-    quantity: number;
-  }) => ({
-    order_id: order.id,
-    product_id: Number(item.id),
-    product_name: item.name,
-    price: item.price,
-    quantity: item.quantity,
-  })
-);
+    if (!products || products.length !== productIds.length) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "One or more products are no longer available.",
+        },
+        { status: 400 }
+      );
+    }
 
-const { error: itemsError } = await supabaseAdmin
-  .from("order_items")
-  .insert(orderItems);
+    let totalAmount = 0;
 
-if (itemsError) {
-  console.error("Order items error:", itemsError);
+    const orderItems = normalizedItems.map((cartItem) => {
+      const product = products.find(
+        (product) =>
+          Number(product.id) === Number(cartItem.id)
+      );
 
-  return NextResponse.json(
-    {
-      success: false,
-      error: itemsError.message,
-    },
-    { status: 500 }
-  );
-}
+      if (!product) {
+        throw new Error("Product not found.");
+      }
+
+      if (!product.is_active) {
+        throw new Error(
+          `${product.name} is currently unavailable.`
+        );
+      }
+
+      if (product.stock < cartItem.quantity) {
+        throw new Error(
+          `Only ${product.stock} unit(s) available for ${product.name}.`
+        );
+      }
+
+      const unitPrice = Number(product.price);
+
+      totalAmount += unitPrice * cartItem.quantity;
+
+      return {
+        product_id: Number(product.id),
+        product_name: product.name,
+        price: unitPrice,
+        quantity: cartItem.quantity,
+      };
+    });
+
+    // Create order using server-calculated total
+    const { data: order, error: orderError } =
+      await supabaseAdmin
+        .from("orders")
+        .insert({
+          customer_name,
+          mobile,
+          email,
+          address,
+          city,
+          state,
+          pincode,
+          landmark: landmark || "",
+          total_amount: totalAmount,
+          payment_status: "pending",
+          order_status: "pending",
+        })
+        .select()
+        .single();
+
+    if (orderError || !order) {
+      console.error(
+        "Supabase order error:",
+        orderError
+      );
+
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            orderError?.message ||
+            "Unable to create order.",
+        },
+        { status: 500 }
+      );
+    }
+
+    const trustedOrderItems = orderItems.map(
+      (item) => ({
+        order_id: order.id,
+        ...item,
+      })
+    );
+
+    const { error: itemsError } =
+      await supabaseAdmin
+        .from("order_items")
+        .insert(trustedOrderItems);
+
+    if (itemsError) {
+      console.error(
+        "Order items error:",
+        itemsError
+      );
+
+      // Cleanup incomplete order
+      await supabaseAdmin
+        .from("orders")
+        .delete()
+        .eq("id", order.id);
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Unable to save order items.",
+        },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      order,
+      order: {
+        ...order,
+        total_amount: totalAmount,
+      },
     });
   } catch (error) {
-    console.error("Create order API error:", error);
+    console.error(
+      "Create order API error:",
+      error
+    );
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Unable to create order.";
 
     return NextResponse.json(
       {
         success: false,
-        error: "Unable to create order",
+        error: message,
       },
-      { status: 500 }
+      { status: 400 }
     );
   }
 }
