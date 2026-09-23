@@ -1,4 +1,5 @@
 import Providers from "./providers";
+import InstagramButton from "./InstagramButton";
 import WhatsAppButton from "./WhatsAppButton";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -35,7 +36,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Providers>
           {children}
 
-          <WhatsAppButton />
+          <InstagramButton />
+<WhatsAppButton />
         </Providers>
       </body>
     </html>

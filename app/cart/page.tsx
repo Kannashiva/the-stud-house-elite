@@ -1,10 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import StoreHeader from "../StoreHeader";
 import Image from "next/image";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCart } from "../context/CartContext";
+import { supabase } from "../../lib/supabase";
 
 export default function CartPage() {
   const {
@@ -14,6 +17,34 @@ export default function CartPage() {
     increaseQuantity,
     decreaseQuantity,
   } = useCart();
+
+  const router = useRouter();
+
+  const [checkingAuth, setCheckingAuth] =
+    useState(false);
+
+  const handleCheckout = async () => {
+    if (checkingAuth) return;
+
+    setCheckingAuth(true);
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        router.push(
+          "/account/login?redirect=/checkout"
+        );
+        return;
+      }
+
+      router.push("/checkout");
+    } finally {
+      setCheckingAuth(false);
+    }
+  };
 
   if (cart.length === 0) {
     return (
@@ -61,69 +92,109 @@ export default function CartPage() {
           <div className="grid gap-10 lg:grid-cols-[1fr_380px]">
             {/* Cart Items */}
             <div className="space-y-5">
-              {cart.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex gap-5 rounded-[24px] border border-[#ead8cf] bg-white p-4"
-                >
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    width={150}
-                    height={150}
-                    className="h-28 w-28 rounded-[18px] object-cover sm:h-36 sm:w-36"
-                  />
+              {cart.map((item) => {
+                const isMaxStock =
+                  item.quantity >= item.stock;
 
-                  <div className="flex flex-1 flex-col justify-between">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.2em] text-[#b98b67]">
-                        {item.category}
-                      </p>
+                return (
+                  <div
+                    key={item.id}
+                    className="flex gap-5 rounded-[24px] border border-[#ead8cf] bg-white p-4"
+                  >
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      width={150}
+                      height={150}
+                      className="h-28 w-28 rounded-[18px] object-cover sm:h-36 sm:w-36"
+                    />
 
-                      <h2 className="mt-1 font-serif text-lg sm:text-xl">
-                        {item.name}
-                      </h2>
+                    <div className="flex flex-1 flex-col justify-between">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.2em] text-[#b98b67]">
+                          {item.category}
+                        </p>
 
-                      <p className="mt-2 font-semibold">
-                        ₹{item.price.toLocaleString("en-IN")}
-                      </p>
-                    </div>
+                        <h2 className="mt-1 font-serif text-lg sm:text-xl">
+                          {item.name}
+                        </h2>
 
-                    <div className="mt-4 flex items-center justify-between">
-                      <div className="flex items-center rounded-full border border-[#dcc9bf]">
+                        <p className="mt-2 font-semibold">
+                          ₹
+                          {item.price.toLocaleString(
+                            "en-IN"
+                          )}
+                        </p>
+
+                        <p className="mt-1 text-xs text-[#8b736b]">
+                          {item.stock} item
+                          {item.stock > 1
+                            ? "s"
+                            : ""}{" "}
+                          available
+                        </p>
+                      </div>
+
+                      <div className="mt-4 flex items-center justify-between">
+                        <div className="flex items-center rounded-full border border-[#dcc9bf]">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              decreaseQuantity(
+                                item.id
+                              )
+                            }
+                            disabled={
+                              item.quantity <= 1
+                            }
+                            className="px-4 py-2 transition disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            −
+                          </button>
+
+                          <span className="min-w-8 text-center text-sm font-semibold">
+                            {item.quantity}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              increaseQuantity(
+                                item.id
+                              )
+                            }
+                            disabled={isMaxStock}
+                            className="px-4 py-2 transition disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            +
+                          </button>
+                        </div>
+
                         <button
                           type="button"
-                          onClick={() => decreaseQuantity(item.id)}
-                          className="px-4 py-2"
+                          onClick={() =>
+                            removeFromCart(
+                              item.id
+                            )
+                          }
+                          aria-label="Remove product"
+                          className="text-red-600 transition hover:text-red-700"
                         >
-                          −
-                        </button>
-
-                        <span className="min-w-8 text-center text-sm font-semibold">
-                          {item.quantity}
-                        </span>
-
-                        <button
-                          type="button"
-                          onClick={() => increaseQuantity(item.id)}
-                          className="px-4 py-2"
-                        >
-                          +
+                          <Trash2 size={19} />
                         </button>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => removeFromCart(item.id)}
-                        aria-label="Remove product"
-                        className="text-red-600 transition hover:text-red-700"
-                      >
-                        <Trash2 size={19} />
-                      </button>
+                      {isMaxStock &&
+                        item.stock > 0 && (
+                          <p className="mt-2 text-xs font-medium text-[#b98b67]">
+                            Maximum available
+                            quantity reached
+                          </p>
+                        )}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Order Summary */}
@@ -135,12 +206,20 @@ export default function CartPage() {
               <div className="mt-7 space-y-4 border-b border-white/15 pb-6 text-sm">
                 <div className="flex justify-between text-white/70">
                   <span>Subtotal</span>
-                  <span>₹{subtotal.toLocaleString("en-IN")}</span>
+
+                  <span>
+                    ₹
+                    {subtotal.toLocaleString(
+                      "en-IN"
+                    )}
+                  </span>
                 </div>
 
                 <div className="flex justify-between text-white/70">
                   <span>Shipping</span>
-                  <span>Calculated at checkout</span>
+                  <span>
+                    Calculated at checkout
+                  </span>
                 </div>
               </div>
 
@@ -150,16 +229,23 @@ export default function CartPage() {
                 </span>
 
                 <span className="text-xl font-semibold text-[#e8c4ac]">
-                  ₹{subtotal.toLocaleString("en-IN")}
+                  ₹
+                  {subtotal.toLocaleString(
+                    "en-IN"
+                  )}
                 </span>
               </div>
 
-              <Link
-                href="/checkout"
-                className="mt-7 block w-full rounded-full bg-[#e8c4ac] py-4 text-center text-sm font-semibold text-[#2a1f1d] transition hover:bg-white"
+              <button
+                type="button"
+                onClick={handleCheckout}
+                disabled={checkingAuth}
+                className="mt-7 block w-full rounded-full bg-[#e8c4ac] py-4 text-center text-sm font-semibold text-[#2a1f1d] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Proceed to Checkout
-              </Link>
+                {checkingAuth
+                  ? "Checking Account..."
+                  : "Proceed to Checkout"}
+              </button>
 
               <Link
                 href="/shop"

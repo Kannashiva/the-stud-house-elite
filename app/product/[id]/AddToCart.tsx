@@ -10,6 +10,7 @@ type Product = {
   price: number;
   image: string;
   category: string;
+  stock: number;
 };
 
 export default function AddToCart({
@@ -24,15 +25,23 @@ export default function AddToCart({
   const { addToCart } = useCart();
   const router = useRouter();
 
+  const isOutOfStock = product.stock <= 0;
+
   const decrease = () => {
-    setQuantity((current) => Math.max(1, current - 1));
+    setQuantity((current) =>
+      Math.max(1, current - 1)
+    );
   };
 
   const increase = () => {
-    setQuantity((current) => current + 1);
+    setQuantity((current) =>
+      Math.min(product.stock, current + 1)
+    );
   };
 
   const handleAdd = () => {
+    if (isOutOfStock) return;
+
     if (inCart) {
       router.push("/cart");
       return;
@@ -49,6 +58,8 @@ export default function AddToCart({
   };
 
   const handleBuyNow = () => {
+    if (isOutOfStock) return;
+
     addToCart(product, quantity);
     router.push("/checkout");
   };
@@ -65,23 +76,41 @@ export default function AddToCart({
           <button
             type="button"
             onClick={decrease}
-            className="text-xl text-[#6e5b55]"
+            disabled={isOutOfStock || quantity <= 1}
+            className="text-xl text-[#6e5b55] disabled:cursor-not-allowed disabled:opacity-40"
           >
             −
           </button>
 
           <span className="mx-6 font-semibold">
-            {quantity}
+            {isOutOfStock ? 0 : quantity}
           </span>
 
           <button
             type="button"
             onClick={increase}
-            className="text-xl text-[#6e5b55]"
+            disabled={
+              isOutOfStock ||
+              quantity >= product.stock
+            }
+            className="text-xl text-[#6e5b55] disabled:cursor-not-allowed disabled:opacity-40"
           >
             +
           </button>
         </div>
+
+        {!isOutOfStock && (
+          <p className="mt-2 text-xs text-[#7c6a63]">
+            {product.stock} item
+            {product.stock > 1 ? "s" : ""} available
+          </p>
+        )}
+
+        {isOutOfStock && (
+          <p className="mt-2 text-sm font-semibold text-red-600">
+            Sold Out
+          </p>
+        )}
       </div>
 
       {/* Buttons */}
@@ -89,9 +118,12 @@ export default function AddToCart({
         <button
           type="button"
           onClick={handleAdd}
-          className="rounded-full bg-[#2a1f1d] px-10 py-4 text-sm font-semibold text-white transition hover:bg-[#b98b67]"
+          disabled={isOutOfStock}
+          className="rounded-full bg-[#2a1f1d] px-10 py-4 text-sm font-semibold text-white transition hover:bg-[#b98b67] disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-600"
         >
-          {added
+          {isOutOfStock
+            ? "Sold Out"
+            : added
             ? "Added to Cart ✓"
             : inCart
             ? "Go to Cart"
@@ -101,9 +133,10 @@ export default function AddToCart({
         <button
           type="button"
           onClick={handleBuyNow}
-          className="rounded-full border border-[#b98b67] px-10 py-4 text-sm font-semibold transition hover:bg-[#b98b67] hover:text-white"
+          disabled={isOutOfStock}
+          className="rounded-full border border-[#b98b67] px-10 py-4 text-sm font-semibold transition hover:bg-[#b98b67] hover:text-white disabled:cursor-not-allowed disabled:border-gray-300 disabled:text-gray-400 disabled:hover:bg-transparent"
         >
-          Buy Now
+          {isOutOfStock ? "Unavailable" : "Buy Now"}
         </button>
       </div>
     </>

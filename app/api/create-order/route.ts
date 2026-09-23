@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate cart quantities and normalize product IDs
+    // Normalize cart items
     const normalizedItems: CartItemInput[] = items.map(
       (item: CartItemInput) => ({
         id: Number(item.id),
@@ -86,12 +86,19 @@ export async function POST(request: Request) {
       ),
     ];
 
-    // Fetch real product data from database
+    // Fetch trusted product data
     const { data: products, error: productsError } =
       await supabaseAdmin
         .from("products")
         .select(
-          "id, name, price, stock, is_active"
+          `
+          id,
+          name,
+          price,
+          stock,
+          reserved_stock,
+          is_active
+          `
         )
         .in("id", productIds);
 
@@ -110,7 +117,10 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!products || products.length !== productIds.length) {
+    if (
+      !products ||
+      products.length !== productIds.length
+    ) {
       return NextResponse.json(
         {
           success: false,
@@ -123,39 +133,75 @@ export async function POST(request: Request) {
 
     let totalAmount = 0;
 
-    const orderItems = normalizedItems.map((cartItem) => {
-      const product = products.find(
-        (product) =>
-          Number(product.id) === Number(cartItem.id)
-      );
-
-      if (!product) {
-        throw new Error("Product not found.");
-      }
-
-      if (!product.is_active) {
-        throw new Error(
-          `${product.name} is currently unavailable.`
+    const orderItems = normalizedItems.map(
+      (cartItem) => {
+        const product = products.find(
+          (product) =>
+            Number(product.id) ===
+            Number(cartItem.id)
         );
-      }
 
-      if (product.stock < cartItem.quantity) {
-        throw new Error(
-          `Only ${product.stock} unit(s) available for ${product.name}.`
+        if (!product) {
+          throw new Error("Product not found.");
+        }
+
+        if (!product.is_active) {
+          throw new Error(
+            `${product.name} is currently unavailable.`
+          );
+        }
+
+        const totalStock = Number(
+          product.stock || 0
         );
+
+        const reservedStock = Number(
+          product.reserved_stock || 0
+        );
+
+        const availableStock = Math.max(
+          0,
+          totalStock - reservedStock
+        );
+
+        if (
+          cartItem.quantity >
+          availableStock
+        ) {
+          throw new Error(
+            `Only ${availableStock} unit(s) available for ${product.name}.`
+          );
+        }
+
+        const unitPrice = Number(
+          product.price
+        );
+
+        if (
+          !Number.isFinite(unitPrice) ||
+          unitPrice < 0
+        ) {
+          throw new Error(
+            `Invalid price for ${product.name}.`
+          );
+        }
+
+        totalAmount +=
+          unitPrice *
+          cartItem.quantity;
+
+        return {
+          product_id: Number(
+            product.id
+          ),
+          product_name:
+            product.name,
+          price: unitPrice,
+          quantity:
+            cartItem.quantity,
+        };
       }
-
-      const unitPrice = Number(product.price);
-
-      totalAmount += unitPrice * cartItem.quantity;
-
-      return {
-        product_id: Number(product.id),
-        product_name: product.name,
-        price: unitPrice,
-        quantity: cartItem.quantity,
-      };
-    });
+    );
 
     // Create order using server-calculated total
     const { data: order, error: orderError } =
@@ -170,9 +216,21 @@ export async function POST(request: Request) {
           state,
           pincode,
           landmark: landmark || "",
-          total_amount: totalAmount,
-          payment_status: "pending",
-          order_status: "pending",
+
+          total_amount:
+            totalAmount,
+
+          payment_status:
+            "pending",
+
+          order_status:
+            "pending",
+
+          reservation_status:
+            "none",
+
+          reservation_expires_at:
+            null,
         })
         .select()
         .single();
@@ -194,17 +252,18 @@ export async function POST(request: Request) {
       );
     }
 
-    const trustedOrderItems = orderItems.map(
-      (item) => ({
+    const trustedOrderItems =
+      orderItems.map((item) => ({
         order_id: order.id,
         ...item,
-      })
-    );
+      }));
 
     const { error: itemsError } =
       await supabaseAdmin
         .from("order_items")
-        .insert(trustedOrderItems);
+        .insert(
+          trustedOrderItems
+        );
 
     if (itemsError) {
       console.error(
@@ -212,7 +271,6 @@ export async function POST(request: Request) {
         itemsError
       );
 
-      // Cleanup incomplete order
       await supabaseAdmin
         .from("orders")
         .delete()
@@ -221,7 +279,8 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: "Unable to save order items.",
+          error:
+            "Unable to save order items.",
         },
         { status: 500 }
       );
@@ -229,9 +288,11 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
+
       order: {
         ...order,
-        total_amount: totalAmount,
+        total_amount:
+          totalAmount,
       },
     });
   } catch (error) {
