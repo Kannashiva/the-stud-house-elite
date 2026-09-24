@@ -11,8 +11,10 @@ import {
   Menu,
   X,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
 import { useCart } from "./context/CartContext";
+import { supabase } from "../lib/supabase";
 
 export default function StoreHeader() {
   const router = useRouter();
@@ -21,8 +23,11 @@ export default function StoreHeader() {
   const [searchTerm, setSearchTerm] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] =
     useState(false);
-
+  const [searchOpen, setSearchOpen] =
+    useState(false);
   const [scrolled, setScrolled] =
+    useState(false);
+  const [isLoggedIn, setIsLoggedIn] =
     useState(false);
 
   useEffect(() => {
@@ -45,6 +50,49 @@ export default function StoreHeader() {
     };
   }, []);
 
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      setIsLoggedIn(!!session);
+    };
+
+    checkSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setIsLoggedIn(!!session);
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    const { error } =
+      await supabase.auth.signOut();
+
+    if (error) {
+      console.error(
+        "Logout error:",
+        error
+      );
+      return;
+    }
+
+    setMobileMenuOpen(false);
+    setSearchOpen(false);
+
+    router.replace("/");
+    router.refresh();
+  };
+
   const handleSearch = () => {
     const term = searchTerm.trim();
 
@@ -54,12 +102,7 @@ export default function StoreHeader() {
       `/shop?search=${encodeURIComponent(term)}`
     );
 
-    const searchBar =
-      document.getElementById(
-        "navbar-search"
-      );
-
-    searchBar?.classList.add("hidden");
+    setSearchOpen(false);
 
     setMobileMenuOpen(false);
   };
@@ -152,7 +195,7 @@ export default function StoreHeader() {
       <div className="relative mx-3 mt-3 max-w-7xl lg:mx-auto">
         {/* Main Navbar */}
         <div
-          className={`relative z-50 flex min-h-[96px] items-center justify-between border border-[#ead8cf] px-5 transition-all duration-300 ${
+          className={`relative z-50 flex min-h-[96px] items-center justify-between overflow-hidden border border-[#ead8cf] px-5 transition-all duration-300 ${
             mobileMenuOpen
   ? "rounded-t-[24px] rounded-b-none border-b-0 lg:rounded-[28px] lg:border-b"
   : "rounded-[24px] lg:rounded-[28px]"
@@ -170,14 +213,13 @@ export default function StoreHeader() {
                 ? "Close menu"
                 : "Open menu"
             }
-            aria-expanded={
-              mobileMenuOpen
-            }
-            onClick={() =>
+            aria-expanded={mobileMenuOpen}
+            onClick={() => {
+              setSearchOpen(false);
               setMobileMenuOpen(
                 !mobileMenuOpen
-              )
-            }
+              );
+            }}
             className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-[#f4e3da] hover:text-[#b98b67] lg:hidden"
           >
             {mobileMenuOpen ? (
@@ -191,7 +233,11 @@ export default function StoreHeader() {
           <Link
             href="/"
             onClick={closeMobileMenu}
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:static lg:translate-x-0 lg:translate-y-0"
+            className={`absolute top-1/2 z-[70] -translate-y-1/2 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:static lg:z-auto lg:translate-x-0 lg:translate-y-0 ${
+              searchOpen
+                ? "left-[72px] -translate-x-0"
+                : "left-1/2 -translate-x-1/2"
+            }`}
           >
             <Image
               src="/images/logo/studlogo.png"
@@ -248,24 +294,25 @@ export default function StoreHeader() {
               aria-label="Search"
               onClick={() => {
                 setMobileMenuOpen(false);
-
-                const searchBar =
-                  document.getElementById(
-                    "navbar-search"
-                  );
-
-                searchBar?.classList.toggle(
-                  "hidden"
-                );
+                setSearchOpen(true);
 
                 setTimeout(() => {
-                  const searchInput =
+                  const desktopInput =
                     document.getElementById(
                       "navbar-search-input"
                     );
 
-                  searchInput?.focus();
-                }, 100);
+                  const mobileInput =
+                    document.getElementById(
+                      "navbar-search-input-mobile"
+                    );
+
+                  if (window.innerWidth >= 1024) {
+                    desktopInput?.focus();
+                  } else {
+                    mobileInput?.focus();
+                  }
+                }, 300);
               }}
               className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-[#f4e3da] hover:text-[#b98b67]"
             >
@@ -295,6 +342,132 @@ export default function StoreHeader() {
                 {cartCount}
               </span>
             </Link>
+
+            {/* Logout - shown only when signed in */}
+            {isLoggedIn && (
+              <button
+                type="button"
+                onClick={handleLogout}
+                aria-label="Logout"
+                title="Logout"
+                className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-[#f4e3da] hover:text-[#b98b67]"
+              >
+                <LogOut size={21} />
+              </button>
+            )}
+          </div>
+
+          {/* Search Panel - expands from the right search icon towards the logo */}
+          <div
+            className={`absolute bottom-0 top-0 z-[60] hidden origin-right items-center overflow-hidden bg-[#fffaf8]/98 backdrop-blur-2xl transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:flex ${
+              searchOpen
+                ? "left-[125px] right-[188px] scale-x-100 opacity-100"
+                : "left-[125px] right-[188px] pointer-events-none scale-x-0 opacity-0"
+            }`}
+            aria-hidden={!searchOpen}
+          >
+            <div className="flex w-full items-center gap-3 rounded-full border border-[#d8aa88] bg-white/85 px-5 shadow-sm">
+              <Search
+                size={20}
+                className="shrink-0 text-[#b98b67]"
+              />
+
+              <input
+                id="navbar-search-input"
+                type="text"
+                value={searchTerm}
+                onChange={(e) =>
+                  setSearchTerm(e.target.value)
+                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearch();
+                  }
+
+                  if (e.key === "Escape") {
+                    setSearchOpen(false);
+                  }
+                }}
+                placeholder="Search jewellery..."
+                tabIndex={searchOpen ? 0 : -1}
+                className="min-w-0 flex-1 bg-transparent py-4 text-sm text-[#2a1f1d] outline-none placeholder:text-[#9f8c85] sm:text-base"
+              />
+
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSearchTerm("")
+                  }
+                  tabIndex={searchOpen ? 0 : -1}
+                  className="shrink-0 text-sm font-medium text-[#8b736b] transition hover:text-[#2a1f1d]"
+                >
+                  Clear
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() =>
+                  setSearchOpen(false)
+                }
+                tabIndex={searchOpen ? 0 : -1}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#8b736b] transition hover:bg-[#f4e3da] hover:text-[#2a1f1d]"
+                aria-label="Close search"
+              >
+                <X size={19} />
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile / tablet search - expands from right and stops before moving logo */}
+          <div
+            className={`absolute inset-y-0 left-[150px] right-3 z-[60] flex origin-right items-center overflow-hidden bg-[#fffaf8]/98 backdrop-blur-2xl transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:hidden ${
+              searchOpen
+                ? "scale-x-100 opacity-100"
+                : "pointer-events-none scale-x-0 opacity-0"
+            }`}
+            aria-hidden={!searchOpen}
+          >
+            <div className="flex w-full items-center gap-2 rounded-full border border-[#d8aa88] bg-white/90 px-3 shadow-sm">
+              <Search
+                size={18}
+                className="shrink-0 text-[#b98b67]"
+              />
+
+              <input
+                id="navbar-search-input-mobile"
+                type="text"
+                value={searchTerm}
+                onChange={(e) =>
+                  setSearchTerm(e.target.value)
+                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearch();
+                  }
+
+                  if (e.key === "Escape") {
+                    setSearchOpen(false);
+                  }
+                }}
+                placeholder="Search jewellery..."
+                tabIndex={searchOpen ? 0 : -1}
+                className="min-w-0 flex-1 bg-transparent py-3 text-sm text-[#2a1f1d] outline-none placeholder:text-[#9f8c85]"
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setSearchOpen(false)
+                }
+                tabIndex={searchOpen ? 0 : -1}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#8b736b]"
+                aria-label="Close search"
+              >
+                <X size={18} />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -395,83 +568,6 @@ export default function StoreHeader() {
         </div>
       </div>
 
-      {/* Search Bar */}
-      <div
-        id="navbar-search"
-        className="relative z-50 hidden border-b border-[#ead8cf] bg-white/95 backdrop-blur-xl"
-      >
-        <div className="mx-auto max-w-7xl px-4 py-3 sm:px-5 sm:py-4">
-          <div className="flex items-center gap-2 rounded-full border border-[#eadbd4] bg-[#fffaf8] px-4 transition focus-within:border-[#b98b67] sm:gap-4 sm:px-5">
-            <Search
-              size={19}
-              className="shrink-0 text-[#b98b67]"
-            />
-
-            <input
-              id="navbar-search-input"
-              type="text"
-              value={searchTerm}
-              onChange={(e) =>
-                setSearchTerm(
-                  e.target.value
-                )
-              }
-              onKeyDown={(e) => {
-                if (
-                  e.key === "Enter"
-                ) {
-                  handleSearch();
-                }
-
-                if (
-                  e.key === "Escape"
-                ) {
-                  const searchBar =
-                    document.getElementById(
-                      "navbar-search"
-                    );
-
-                  searchBar?.classList.add(
-                    "hidden"
-                  );
-                }
-              }}
-              placeholder="Search jewellery..."
-              className="min-w-0 flex-1 bg-transparent py-3 text-sm text-[#2a1f1d] outline-none placeholder:text-[#9f8c85] sm:py-4"
-            />
-
-            {searchTerm && (
-              <button
-                type="button"
-                onClick={() =>
-                  setSearchTerm("")
-                }
-                className="hidden shrink-0 text-sm font-medium text-[#8b736b] transition hover:text-[#2a1f1d] sm:block"
-              >
-                Clear
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={() => {
-                const searchBar =
-                  document.getElementById(
-                    "navbar-search"
-                  );
-
-                searchBar?.classList.add(
-                  "hidden"
-                );
-              }}
-              className="shrink-0 text-[#8b736b] transition hover:text-[#2a1f1d]"
-              aria-label="Close search"
-            >
-              <X size={19} />
-            </button>
-          </div>
-        </div>
-      </div>
     </header>
   );
 }

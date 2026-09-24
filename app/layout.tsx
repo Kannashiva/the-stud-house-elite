@@ -1,6 +1,5 @@
 import Providers from "./providers";
-import InstagramButton from "./InstagramButton";
-import WhatsAppButton from "./WhatsAppButton";
+import FloatingButtons from "./FloatingButtons";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -26,7 +25,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: LayoutProps<"/">) {
   return (
     <html
       lang="en"
@@ -36,8 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Providers>
           {children}
 
-          <InstagramButton />
-<WhatsAppButton />
+          <FloatingButtons />
         </Providers>
       </body>
     </html>

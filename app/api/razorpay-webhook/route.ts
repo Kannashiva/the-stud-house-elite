@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
 import { createClient } from "@supabase/supabase-js";
+import { sendOrderConfirmationEmail } from "../../../lib/sendOrderConfirmationEmail";
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -124,12 +125,18 @@ export async function POST(request: Request) {
       );
     }
 
-    if (order.payment_status === "paid") {
-      return NextResponse.json({
-        success: true,
-        message: "Order already finalized.",
-      });
-    }
+    if (
+  order.payment_status === "paid"
+) {
+  await sendOrderConfirmationEmail(
+    order.id
+  );
+
+  return NextResponse.json({
+    success: true,
+    message: "Order already finalized.",
+  });
+}
 
     const { error: finalizeError } =
       await supabaseAdmin.rpc(
@@ -158,7 +165,16 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
+const emailResult =
+  await sendOrderConfirmationEmail(
+    order.id
+  );
 
+if (!emailResult.success) {
+  console.error(
+    "Webhook finalized order but confirmation email could not be sent."
+  );
+}
     return NextResponse.json({
       success: true,
     });

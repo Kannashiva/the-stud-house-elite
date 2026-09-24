@@ -16,7 +16,6 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-
     const orderId = Number(id);
 
     if (!Number.isInteger(orderId) || orderId <= 0) {
@@ -48,7 +47,6 @@ export async function GET(
     const accessToken =
       authorization.replace("Bearer ", "");
 
-    // Verify logged-in Supabase customer
     const {
       data: { user },
       error: userError,
@@ -70,8 +68,6 @@ export async function GET(
       );
     }
 
-    // Fetch only if this order belongs
-    // to the verified customer's email
     const {
       data: order,
       error: orderError,
@@ -91,6 +87,10 @@ export async function GET(
         total_amount,
         payment_status,
         order_status,
+        payment_mode,
+        courier_name,
+        tracking_number,
+        tracking_url,
         razorpay_payment_id,
         created_at
         `
@@ -146,10 +146,57 @@ export async function GET(
       );
     }
 
+    const productIds = [
+      ...new Set(
+        (items || []).map(
+          (item) => item.product_id
+        )
+      ),
+    ];
+
+    let imageMap =
+      new Map<number, string | null>();
+
+    if (productIds.length > 0) {
+      const {
+        data: products,
+        error: productsError,
+      } = await supabaseAdmin
+        .from("products")
+        .select("id, image_url")
+        .in("id", productIds);
+
+      if (productsError) {
+        console.error(
+          "Customer order product images error:",
+          productsError
+        );
+      } else {
+        imageMap = new Map(
+          (products || []).map(
+            (product) => [
+              Number(product.id),
+              product.image_url || null,
+            ]
+          )
+        );
+      }
+    }
+
+    const enhancedItems = (items || []).map(
+      (item) => ({
+        ...item,
+        image_url:
+          imageMap.get(
+            Number(item.product_id)
+          ) || null,
+      })
+    );
+
     return NextResponse.json({
       success: true,
       order,
-      items: items || [],
+      items: enhancedItems,
     });
   } catch (error) {
     console.error(

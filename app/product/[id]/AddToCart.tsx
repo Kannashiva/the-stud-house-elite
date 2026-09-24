@@ -2,6 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Check,
+  Minus,
+  Plus,
+  ShoppingBag,
+  Zap,
+} from "lucide-react";
 import { useCart } from "../../context/CartContext";
 
 type Product = {
@@ -18,14 +25,20 @@ export default function AddToCart({
 }: {
   product: Product;
 }) {
-  const [quantity, setQuantity] = useState(1);
-  const [added, setAdded] = useState(false);
-  const [inCart, setInCart] = useState(false);
+  const [quantity, setQuantity] =
+    useState(1);
+
+  const [added, setAdded] =
+    useState(false);
+
+  const [inCart, setInCart] =
+    useState(false);
 
   const { addToCart } = useCart();
   const router = useRouter();
 
-  const isOutOfStock = product.stock <= 0;
+  const isOutOfStock =
+    product.stock <= 0;
 
   const decrease = () => {
     setQuantity((current) =>
@@ -35,7 +48,10 @@ export default function AddToCart({
 
   const increase = () => {
     setQuantity((current) =>
-      Math.min(product.stock, current + 1)
+      Math.min(
+        product.stock,
+        current + 1
+      )
     );
   };
 
@@ -47,7 +63,10 @@ export default function AddToCart({
       return;
     }
 
-    addToCart(product, quantity);
+    addToCart(
+      product,
+      quantity
+    );
 
     setAdded(true);
     setInCart(true);
@@ -60,83 +79,127 @@ export default function AddToCart({
   const handleBuyNow = () => {
     if (isOutOfStock) return;
 
-    addToCart(product, quantity);
+    addToCart(
+      product,
+      quantity
+    );
+
     router.push("/checkout");
   };
 
   return (
     <>
       {/* Quantity */}
-      <div className="mt-8">
-        <p className="mb-3 text-sm font-semibold">
-          Quantity
-        </p>
+      <div className="mt-7">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-[#2a1f1d]">
+              Quantity
+            </p>
 
-        <div className="flex w-fit items-center rounded-full border border-[#dcc9bf] bg-white px-5 py-3">
-          <button
-            type="button"
-            onClick={decrease}
-            disabled={isOutOfStock || quantity <= 1}
-            className="text-xl text-[#6e5b55] disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            −
-          </button>
+            {!isOutOfStock && (
+              <p className="mt-1 text-xs text-[#8b736b]">
+                {product.stock} item
+                {product.stock > 1
+                  ? "s"
+                  : ""}{" "}
+                available
+              </p>
+            )}
+          </div>
 
-          <span className="mx-6 font-semibold">
-            {isOutOfStock ? 0 : quantity}
-          </span>
+          {/* Quantity Selector */}
+          <div className="flex items-center rounded-full border border-[#dcc9bf] bg-white p-1 shadow-sm">
+            <button
+              type="button"
+              aria-label="Decrease quantity"
+              onClick={decrease}
+              disabled={
+                isOutOfStock ||
+                quantity <= 1
+              }
+              className="flex h-10 w-10 items-center justify-center rounded-full text-[#6e5b55] transition hover:bg-[#f6e7df] hover:text-[#b98b67] disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              <Minus size={17} />
+            </button>
 
-          <button
-            type="button"
-            onClick={increase}
-            disabled={
-              isOutOfStock ||
-              quantity >= product.stock
-            }
-            className="text-xl text-[#6e5b55] disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            +
-          </button>
+            <span className="min-w-10 text-center text-sm font-semibold">
+              {isOutOfStock
+                ? 0
+                : quantity}
+            </span>
+
+            <button
+              type="button"
+              aria-label="Increase quantity"
+              onClick={increase}
+              disabled={
+                isOutOfStock ||
+                quantity >=
+                  product.stock
+              }
+              className="flex h-10 w-10 items-center justify-center rounded-full text-[#6e5b55] transition hover:bg-[#f6e7df] hover:text-[#b98b67] disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              <Plus size={17} />
+            </button>
+          </div>
         </div>
 
-        {!isOutOfStock && (
-          <p className="mt-2 text-xs text-[#7c6a63]">
-            {product.stock} item
-            {product.stock > 1 ? "s" : ""} available
-          </p>
-        )}
-
         {isOutOfStock && (
-          <p className="mt-2 text-sm font-semibold text-red-600">
-            Sold Out
+          <p className="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
+            This product is currently
+            unavailable.
           </p>
         )}
       </div>
 
-      {/* Buttons */}
-      <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+      {/* Purchase Buttons */}
+      <div className="mt-7 grid gap-3 sm:grid-cols-2">
         <button
           type="button"
           onClick={handleAdd}
           disabled={isOutOfStock}
-          className="rounded-full bg-[#2a1f1d] px-10 py-4 text-sm font-semibold text-white transition hover:bg-[#b98b67] disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-600"
+          className="group flex min-h-[54px] items-center justify-center gap-2 rounded-full bg-[#2a1f1d] px-6 py-4 text-sm font-semibold tracking-wide text-white shadow-[0_10px_25px_rgba(42,31,29,0.16)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#b98b67] hover:shadow-[0_14px_30px_rgba(185,139,103,0.25)] disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-600 disabled:shadow-none"
         >
-          {isOutOfStock
-            ? "Sold Out"
-            : added
-            ? "Added to Cart ✓"
-            : inCart
-            ? "Go to Cart"
-            : "Add to Cart"}
+          {isOutOfStock ? (
+            "Sold Out"
+          ) : added ? (
+            <>
+              <Check size={18} />
+              Added to Cart
+            </>
+          ) : inCart ? (
+            <>
+              <ShoppingBag size={18} />
+              Go to Cart
+            </>
+          ) : (
+            <>
+              <ShoppingBag
+                size={18}
+                className="transition group-hover:scale-105"
+              />
+              Add to Cart
+            </>
+          )}
         </button>
 
         <button
           type="button"
           onClick={handleBuyNow}
           disabled={isOutOfStock}
-          className="rounded-full border border-[#b98b67] px-10 py-4 text-sm font-semibold transition hover:bg-[#b98b67] hover:text-white disabled:cursor-not-allowed disabled:border-gray-300 disabled:text-gray-400 disabled:hover:bg-transparent"
+          className="group flex min-h-[54px] items-center justify-center gap-2 rounded-full border border-[#b98b67] bg-white/70 px-6 py-4 text-sm font-semibold tracking-wide text-[#2a1f1d] transition duration-300 hover:-translate-y-0.5 hover:bg-[#b98b67] hover:text-white disabled:cursor-not-allowed disabled:border-gray-300 disabled:text-gray-400 disabled:hover:translate-y-0 disabled:hover:bg-transparent"
         >
-          {isOutOfStock ? "Unavailable" : "Buy Now"}
+          {!isOutOfStock && (
+            <Zap
+              size={18}
+              className="transition group-hover:scale-105"
+            />
+          )}
+
+          {isOutOfStock
+            ? "Unavailable"
+            : "Buy Now"}
         </button>
       </div>
     </>
