@@ -19,6 +19,7 @@ import {
   Sparkles,
   ShieldCheck,
   Truck,
+  Gem,
   Headphones,
 } from "lucide-react";
 
@@ -134,13 +135,31 @@ export default function Home() {
       </div>
 
       {/* Trust Row */}
-      <div className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] font-medium uppercase tracking-[0.16em] text-[#8b736b] lg:justify-start">
-        <span>Secure Payments</span>
-        <span className="text-[#c7a489]">•</span>
-        <span>Curated Jewellery</span>
-        <span className="text-[#c7a489]">•</span>
-        <span>Fast Dispatch</span>
-      </div>
+<div className="mt-7 grid grid-cols-3 gap-2 lg:flex lg:items-center lg:justify-start lg:gap-3">
+  <div className="flex items-center justify-center gap-1.5 rounded-full border border-[#ead8cf] bg-white/70 px-2.5 py-2 text-center text-[9px] font-semibold uppercase tracking-[0.1em] text-[#8a6248] backdrop-blur-sm sm:px-3 sm:text-[10px]">
+    <ShieldCheck
+      size={14}
+      className="shrink-0 text-green-600"
+    />
+    Secure Payments
+  </div>
+
+  <div className="flex items-center justify-center gap-1.5 rounded-full border border-[#ead8cf] bg-white/70 px-2.5 py-2 text-center text-[9px] font-semibold uppercase tracking-[0.1em] text-[#8a6248] backdrop-blur-sm sm:px-3 sm:text-[10px]">
+    <Gem
+      size={14}
+      className="shrink-0 text-[#d89a3d]"
+    />
+    Curated Jewellery
+  </div>
+
+  <div className="flex items-center justify-center gap-1.5 rounded-full border border-[#ead8cf] bg-white/70 px-2.5 py-2 text-center text-[9px] font-semibold uppercase tracking-[0.1em] text-[#8a6248] backdrop-blur-sm sm:px-3 sm:text-[10px]">
+    <Truck
+      size={14}
+      className="shrink-0 text-blue-600"
+    />
+    Fast Dispatch
+  </div>
+</div>
     </div>
 
     {/* Hero Logo */}
@@ -267,15 +286,15 @@ export default function Home() {
     </div>
   </div>
 </section>
-      {/* New Arrivals */}
+{/* New Arrivals */}
 <section
   id="new-arrivals"
   className="scroll-mt-36 bg-[#fffaf8] px-5 py-14 md:py-16"
 >
   <div className="mx-auto max-w-7xl">
     {/* Section Heading */}
-    <div className="mb-12 flex flex-col gap-5 text-center md:flex-row md:items-end md:justify-between md:text-left">
-      <div>
+    <div className="mb-12 flex flex-col items-center text-center">
+      <div className="w-full">
         <p className="mb-3 text-xs font-semibold uppercase tracking-[0.35em] text-[#b98b67] sm:text-sm">
           Fresh Picks
         </p>
@@ -284,25 +303,14 @@ export default function Home() {
           New Arrivals
         </h2>
 
-        <div className="mx-auto mt-4 h-px w-14 bg-gradient-to-r from-transparent via-[#b98b67] to-transparent md:mx-0" />
+        <div className="mx-auto mt-4 h-px w-14 bg-gradient-to-r from-transparent via-[#b98b67] to-transparent" />
 
-        <p className="mt-4 max-w-2xl text-sm leading-7 text-[#6e5b55] sm:text-base">
+        <p className="mx-auto mt-4 max-w-2xl text-center leading-7 text-[#6e5b55]">
           Discover our latest jewellery pieces, thoughtfully
           selected for modern elegance and everyday charm.
         </p>
       </div>
-
-      <Link
-        href="/shop"
-        className="mx-auto inline-flex items-center justify-center gap-2 rounded-full border border-[#b98b67] bg-white/70 px-6 py-3 text-sm font-semibold text-[#2a1f1d] backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:bg-[#b98b67] hover:text-white md:mx-0"
-      >
-        View All
-        <span className="transition group-hover:translate-x-1">
-          →
-        </span>
-      </Link>
     </div>
-
     {/* Product Grid */}
     <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
       {newArrivals.map((product) => {
@@ -316,80 +324,69 @@ export default function Home() {
             : 0;
 
         return (
-          <Link
-            key={product.id}
-            href={`/product/${product.id}`}
-            className="group block"
-          >
-            <div className="overflow-hidden rounded-[24px] border border-[#ead8cf]/70 bg-white shadow-[0_10px_30px_rgba(70,45,38,0.06)] transition duration-500 hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(70,45,38,0.13)]">
+  <Link
+    key={product.id}
+    href={`/product/${product.id}`}
+    className="group block h-full"
+  >
+    <article className="flex h-full flex-col overflow-hidden rounded-[26px] border border-[#ead8cf]/70 bg-white shadow-[0_14px_38px_rgba(70,45,38,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(70,45,38,0.10)]">
+      <div className="relative overflow-hidden bg-[#f8efeb]">
+        <div className="aspect-[4/5]">
+          <Image
+            src={product.image_url}
+            alt={product.name}
+            width={500}
+            height={625}
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+          />
+        </div>
 
-              {/* Product Image */}
-              <div className="relative overflow-hidden bg-[#f8efeb]">
-                <Image
-                  src={product.image_url}
-                  alt={product.name}
-                  width={500}
-                  height={600}
-                  className="h-[235px] w-full object-cover transition duration-700 group-hover:scale-105 sm:h-[280px] md:h-[350px]"
-                />
+        <div className="absolute left-3 top-3 flex items-center gap-2">
+          <span className="rounded-full bg-[#2a1f1d] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white">
+            New
+          </span>
 
-                {/* New Badge */}
-                <span className="absolute left-3 top-3 rounded-full border border-white/40 bg-[#2a1f1d]/90 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-md">
-                  New
-                </span>
+          {discount > 0 && (
+            <span className="rounded-full bg-white/95 px-3 py-1.5 text-[10px] font-semibold text-[#9a6e51] shadow-sm">
+              {discount}% OFF
+            </span>
+          )}
+        </div>
+      </div>
 
-                {/* Discount Badge */}
-                {discount > 0 && (
-                  <span className="absolute right-3 top-3 rounded-full bg-[#fffaf8]/90 px-3 py-1 text-[10px] font-semibold text-[#8a6248] shadow-sm backdrop-blur-md">
-                    {discount}% OFF
-                  </span>
-                )}
+      <div className="flex flex-1 flex-col p-4 sm:p-5">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b98b67] sm:text-xs">
+          {product.category}
+        </p>
 
-                {/* Bottom Image Overlay */}
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#2a1f1d]/10 to-transparent opacity-0 transition duration-300 group-hover:opacity-100" />
-              </div>
+        <h3 className="mt-2 min-h-[52px] font-serif text-xl leading-[1.3] text-[#2a1f1d]">
+          {product.name}
+        </h3>
 
-              {/* Product Info */}
-              <div className="p-4 sm:p-5">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#b98b67] sm:text-xs">
-                  {product.category}
-                </p>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="font-semibold text-[#2a1f1d]">
+            ₹
+            {Number(product.price).toLocaleString("en-IN")}
+          </span>
 
-                <h3 className="mt-2 line-clamp-2 min-h-[48px] font-serif text-[17px] leading-6 text-[#2a1f1d] sm:text-lg">
-                  {product.name}
-                </h3>
+          {product.mrp > product.price && (
+            <span className="text-sm text-[#9f8c85] line-through">
+              ₹
+              {Number(product.mrp).toLocaleString("en-IN")}
+            </span>
+          )}
+        </div>
 
-                {/* Price */}
-                <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span className="text-base font-semibold text-[#2a1f1d]">
-                    ₹
-                    {Number(
-                      product.price
-                    ).toLocaleString("en-IN")}
-                  </span>
-
-                  {product.mrp > product.price && (
-                    <span className="text-xs text-[#9f8c85] line-through sm:text-sm">
-                      ₹
-                      {Number(
-                        product.mrp
-                      ).toLocaleString("en-IN")}
-                    </span>
-                  )}
-                </div>
-
-                {/* CTA */}
-                <div className="mt-4 flex items-center justify-between rounded-full bg-[#2a1f1d] px-4 py-3 text-sm font-semibold text-white transition duration-300 group-hover:bg-[#b98b67]">
-                  <span>View Product</span>
-
-                  <span className="transition duration-300 group-hover:translate-x-1">
-                    →
-                  </span>
-                </div>
-              </div>
-            </div>
-          </Link>
-        );
+        <div className="mt-auto pt-5">
+          <div className="flex w-full items-center justify-center gap-2 rounded-full bg-[#2a1f1d] py-3 text-sm font-semibold text-white transition group-hover:bg-[#b98b67]">
+            View Product
+            <span>→</span>
+          </div>
+        </div>
+      </div>
+    </article>
+  </Link>
+);
       })}
     </div>
   </div>
@@ -431,50 +428,48 @@ export default function Home() {
           <Link
             key={product.id}
             href={`/product/${product.id}`}
-            className="group block"
+            className="group block h-full"
           >
-            <div className="overflow-hidden rounded-[24px] border border-[#ead8cf]/70 bg-[#fffaf8] shadow-[0_10px_30px_rgba(70,45,38,0.06)] transition duration-500 hover:-translate-y-1 hover:shadow-[0_20px_48px_rgba(70,45,38,0.14)]">
+            <article className="flex h-full flex-col overflow-hidden rounded-[26px] border border-[#ead8cf]/70 bg-white shadow-[0_14px_38px_rgba(70,45,38,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(70,45,38,0.10)]">
               {/* Product Image */}
-              <div className="relative overflow-hidden bg-[#f7ece7]">
-                <Image
-                  src={product.image_url}
-                  alt={product.name}
-                  width={500}
-                  height={600}
-                  className="h-[235px] w-full object-cover transition duration-700 group-hover:scale-105 sm:h-[280px] md:h-[350px]"
-                />
+              <div className="relative overflow-hidden bg-[#f8efeb]">
+                <div className="aspect-[4/5]">
+                  <Image
+                    src={product.image_url}
+                    alt={product.name}
+                    width={500}
+                    height={625}
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  />
+                </div>
 
-                {/* Best Seller Badge */}
-                {/* Best Seller Badge */}
-<div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-white/30 bg-[#b98b67]/95 px-2.5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-white shadow-sm backdrop-blur-md sm:px-3 sm:text-[10px]">
-  <span>★</span>
-  <span>Best Seller</span>
-</div>
+                {/* Badges */}
+                <div className="absolute left-3 top-3 flex items-center gap-2">
+                  <span className="rounded-full bg-[#b98b67] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white">
+                    ★ Best Seller
+                  </span>
 
-{/* Discount Badge */}
-{discount > 0 && (
-  <span className="absolute left-3 top-11 rounded-full bg-white/90 px-2.5 py-1 text-[9px] font-semibold text-[#8a6248] shadow-sm backdrop-blur-md sm:left-auto sm:right-3 sm:top-3 sm:px-3 sm:text-[10px]">
-    {discount}% OFF
-  </span>
-)}
-
-                {/* Gold Bottom Glow */}
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#b98b67]/12 to-transparent" />
+                  {discount > 0 && (
+                    <span className="rounded-full bg-white/95 px-3 py-1.5 text-[10px] font-semibold text-[#9a6e51] shadow-sm">
+                      {discount}% OFF
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Product Info */}
-              <div className="p-4 sm:p-5">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#b98b67] sm:text-xs">
+              <div className="flex flex-1 flex-col p-4 sm:p-5">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b98b67] sm:text-xs">
                   {product.category}
                 </p>
 
-                <h3 className="mt-2 line-clamp-2 min-h-[48px] font-serif text-[17px] leading-6 text-[#2a1f1d] sm:text-lg">
+                <h3 className="mt-2 min-h-[52px] line-clamp-2 font-serif text-xl leading-[1.3] text-[#2a1f1d]">
                   {product.name}
                 </h3>
 
                 {/* Price */}
-                <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span className="text-base font-semibold text-[#2a1f1d]">
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span className="font-semibold text-[#2a1f1d]">
                     ₹
                     {Number(
                       product.price
@@ -482,7 +477,7 @@ export default function Home() {
                   </span>
 
                   {product.mrp > product.price && (
-                    <span className="text-xs text-[#9f8c85] line-through sm:text-sm">
+                    <span className="text-sm text-[#9f8c85] line-through">
                       ₹
                       {Number(
                         product.mrp
@@ -492,15 +487,17 @@ export default function Home() {
                 </div>
 
                 {/* CTA */}
-                <div className="mt-4 flex items-center justify-between rounded-full border border-[#b98b67] bg-white px-4 py-3 text-sm font-semibold text-[#2a1f1d] transition duration-300 group-hover:bg-[#b98b67] group-hover:text-white">
-                  <span>View Product</span>
+                <div className="mt-auto pt-5">
+                  <div className="flex w-full items-center justify-center gap-2 rounded-full bg-[#2a1f1d] py-3 text-sm font-semibold text-white transition group-hover:bg-[#b98b67]">
+                    View Product
 
-                  <span className="transition duration-300 group-hover:translate-x-1">
-                    →
-                  </span>
+                    <span className="transition duration-300 group-hover:translate-x-1">
+                      →
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
+            </article>
           </Link>
         );
       })}

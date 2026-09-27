@@ -140,15 +140,21 @@ export default function AdminLoginPage() {
                   {error}
                 </div>
               )}
-
-              <button
-                type="button"
-                onClick={handleLogin}
-                disabled={loading}
-                className="mt-2 w-full rounded-full bg-[#2a1f1d] py-4 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(42,31,29,0.18)] transition hover:bg-[#b98b67] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {loading ? "Signing In..." : "Login"}
-              </button>
+<button
+  type="button"
+  onClick={handleLogin}
+  disabled={loading}
+  className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-[#2a1f1d] py-4 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(42,31,29,0.18)] transition hover:bg-[#b98b67] disabled:cursor-not-allowed disabled:opacity-70"
+>
+  {loading ? (
+    <>
+      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+      Logging in...
+    </>
+  ) : (
+    "Login"
+  )}
+</button>
             </div>
 
             {/* Bottom text */}

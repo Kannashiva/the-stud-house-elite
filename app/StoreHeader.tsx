@@ -287,7 +287,7 @@ export default function StoreHeader() {
           </nav>
 
           {/* Right Icons */}
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-1 sm:gap-4">
             {/* Search */}
             <button
               type="button"
@@ -314,9 +314,9 @@ export default function StoreHeader() {
                   }
                 }, 300);
               }}
-              className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-[#f4e3da] hover:text-[#b98b67]"
+              className="flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-[#f4e3da] hover:text-[#b98b67] sm:h-10 sm:w-10"
             >
-              <Search size={21} />
+              <Search className="h-5 w-5 sm:h-[21px] sm:w-[21px]" />
             </button>
 
             {/* Account */}
@@ -334,9 +334,9 @@ export default function StoreHeader() {
               href="/cart"
               aria-label="Shopping cart"
               onClick={closeMobileMenu}
-              className="relative flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-[#f4e3da] hover:text-[#b98b67]"
+              className="relative flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-[#f4e3da] hover:text-[#b98b67] sm:h-10 sm:w-10"
             >
-              <ShoppingBag size={22} />
+              <ShoppingBag className="h-[21px] w-[21px] sm:h-[22px] sm:w-[22px]" />
 
               <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#b98b67] px-1 text-[10px] text-white">
                 {cartCount}
@@ -350,23 +350,23 @@ export default function StoreHeader() {
                 onClick={handleLogout}
                 aria-label="Logout"
                 title="Logout"
-                className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-[#f4e3da] hover:text-[#b98b67]"
+                className="flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-[#f4e3da] hover:text-[#b98b67] sm:h-10 sm:w-10"
               >
-                <LogOut size={21} />
+                <LogOut className="h-5 w-5 sm:h-[21px] sm:w-[21px]" />
               </button>
             )}
           </div>
 
           {/* Search Panel - expands from the right search icon towards the logo */}
           <div
-            className={`absolute bottom-0 top-0 z-[60] hidden origin-right items-center overflow-hidden bg-[#fffaf8]/98 backdrop-blur-2xl transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:flex ${
+            className={`absolute bottom-0 top-0 z-[60] hidden origin-right items-center overflow-hidden bg-transparent transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:flex ${
               searchOpen
                 ? "left-[125px] right-[188px] scale-x-100 opacity-100"
                 : "left-[125px] right-[188px] pointer-events-none scale-x-0 opacity-0"
             }`}
             aria-hidden={!searchOpen}
           >
-            <div className="flex w-full items-center gap-3 rounded-full border border-[#d8aa88] bg-white/85 px-5 shadow-sm">
+            <div className="flex w-full items-center gap-3 rounded-full border border-[#d8aa88] bg-[#f4e5dd] px-5 shadow-sm">
               <Search
                 size={20}
                 className="shrink-0 text-[#b98b67]"
@@ -422,14 +422,14 @@ export default function StoreHeader() {
 
           {/* Mobile / tablet search - expands from right and stops before moving logo */}
           <div
-            className={`absolute inset-y-0 left-[150px] right-3 z-[60] flex origin-right items-center overflow-hidden bg-[#fffaf8]/98 backdrop-blur-2xl transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:hidden ${
+            className={`absolute inset-y-0 left-[150px] right-3 z-[60] flex origin-right items-center overflow-hidden bg-transparent transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:hidden ${
               searchOpen
                 ? "scale-x-100 opacity-100"
                 : "pointer-events-none scale-x-0 opacity-0"
             }`}
             aria-hidden={!searchOpen}
           >
-            <div className="flex w-full items-center gap-2 rounded-full border border-[#d8aa88] bg-white/90 px-3 shadow-sm">
+            <div className="flex w-full items-center gap-2 rounded-full border border-[#d8aa88] bg-[#f4e5dd] px-3 shadow-sm">
               <Search
                 size={18}
                 className="shrink-0 text-[#b98b67]"
