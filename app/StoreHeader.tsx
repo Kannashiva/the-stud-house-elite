@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import {
+  usePathname,
+  useRouter,
+} from "next/navigation";
 import {
   Search,
   ShoppingBag,
@@ -18,6 +21,7 @@ import { supabase } from "../lib/supabase";
 
 export default function StoreHeader() {
   const router = useRouter();
+  const pathname = usePathname();
   const { cartCount } = useCart();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -92,7 +96,32 @@ export default function StoreHeader() {
     router.replace("/");
     router.refresh();
   };
+const handleHomeClick = (
+  event: React.MouseEvent<
+    HTMLAnchorElement
+  >
+) => {
+  event.preventDefault();
 
+  setMobileMenuOpen(false);
+  setSearchOpen(false);
+
+  if (pathname === "/") {
+    const homeSection =
+      document.getElementById(
+        "home"
+      );
+
+    homeSection?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+
+    return;
+  }
+
+  router.push("/#home");
+};
   const handleSearch = () => {
     const term = searchTerm.trim();
 
@@ -231,8 +260,8 @@ export default function StoreHeader() {
 
           {/* Logo */}
           <Link
-            href="/"
-            onClick={closeMobileMenu}
+  href="/#home"
+  onClick={handleHomeClick}
             className={`absolute top-1/2 z-[70] -translate-y-1/2 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:static lg:z-auto lg:translate-x-0 lg:translate-y-0 ${
               searchOpen
                 ? "left-[72px] -translate-x-0"
@@ -255,10 +284,15 @@ export default function StoreHeader() {
 
           {/* Desktop Menu */}
           <nav className="hidden items-center gap-8 text-sm font-medium lg:flex">
-            <DesktopNavLink
-              href="/"
-              label="Home"
-            />
+            <Link
+  href="/#home"
+  onClick={handleHomeClick}
+  className="group relative py-2 text-sm font-medium text-[#2a1f1d] transition hover:text-[#b98b67]"
+>
+  <span>Home</span>
+
+  <span className="absolute bottom-0 left-1/2 h-[1.5px] w-0 -translate-x-1/2 bg-[#b98b67] transition-all duration-300 group-hover:w-full" />
+</Link>
 
             <DesktopNavLink
               href="/#new-arrivals"
@@ -507,11 +541,15 @@ export default function StoreHeader() {
 
             {/* Links */}
             <nav className="px-4 py-3">
-              <MobileMenuLink
-                href="/"
-                label="Home"
-                onClick={closeMobileMenu}
-              />
+              <Link
+  href="/#home"
+  onClick={handleHomeClick}
+  className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium text-[#2a1f1d] transition hover:bg-[#f4e3da] hover:text-[#b98b67]"
+>
+  <span>Home</span>
+
+  <ChevronRight size={17} />
+</Link>
 
               <MobileMenuLink
                 href="/#new-arrivals"

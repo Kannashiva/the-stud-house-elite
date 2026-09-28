@@ -9,6 +9,7 @@ import {
   Package,
   ShoppingBag,
 } from "lucide-react";
+
 function InstagramAdminIcon({
   size = 16,
 }: {
@@ -44,16 +45,46 @@ function InstagramAdminIcon({
     </svg>
   );
 }
+
+function ReviewsAdminIcon({
+  size = 16,
+}: {
+  size?: number;
+}) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+      <path d="m8 10 2 2 4-4" />
+    </svg>
+  );
+}
+
 export default function AdminHeader() {
-  const pathname = usePathname();
+  const pathname =
+    usePathname();
 
-  const handleLogout = async () => {
-    await fetch("/api/admin/logout", {
-      method: "POST",
-    });
+  const handleLogout =
+    async () => {
+      await fetch(
+        "/api/admin/logout",
+        {
+          method: "POST",
+        }
+      );
 
-    window.location.href = "/admin/login";
-  };
+      window.location.href =
+        "/admin/login";
+    };
 
   const navItems = [
     {
@@ -72,10 +103,15 @@ export default function AdminHeader() {
       icon: ShoppingBag,
     },
     {
-  label: "Instagram",
-  href: "/admin/instagram",
-  icon: InstagramAdminIcon,
-},
+      label: "Instagram",
+      href: "/admin/instagram",
+      icon: InstagramAdminIcon,
+    },
+    {
+      label: "Reviews",
+      href: "/admin/reviews",
+      icon: ReviewsAdminIcon,
+    },
   ];
 
   return (
@@ -105,31 +141,48 @@ export default function AdminHeader() {
             </div>
           </Link>
 
-          <div className="hidden items-center gap-2 lg:flex">
+          <div className="hidden items-center gap-2 xl:flex">
             <nav className="flex items-center gap-1 rounded-full border border-[#ead8cf]/80 bg-white/70 p-1.5 shadow-sm">
-              {navItems.map((item) => {
-                const Icon = item.icon;
+              {navItems.map(
+                (item) => {
+                  const Icon =
+                    item.icon;
 
-                const isActive =
-                  item.href === "/admin"
-                    ? pathname === "/admin"
-                    : pathname.startsWith(item.href);
+                  const isActive =
+                    item.href ===
+                    "/admin"
+                      ? pathname ===
+                        "/admin"
+                      : pathname.startsWith(
+                          item.href
+                        );
 
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition duration-300 ${
-                      isActive
-                        ? "bg-[#2a1f1d] text-white shadow-[0_6px_16px_rgba(42,31,29,0.15)]"
-                        : "text-[#6e5b55] hover:bg-[#fff3ed] hover:text-[#b98b67]"
-                    }`}
-                  >
-                    <Icon size={16} />
-                    {item.label}
-                  </Link>
-                );
-              })}
+                  return (
+                    <Link
+                      key={
+                        item.href
+                      }
+                      href={
+                        item.href
+                      }
+                      className={`inline-flex items-center gap-2 rounded-full px-3.5 py-2.5 text-sm font-semibold transition duration-300 ${
+                        isActive
+                          ? "bg-[#2a1f1d] text-white shadow-[0_6px_16px_rgba(42,31,29,0.15)]"
+                          : "text-[#6e5b55] hover:bg-[#fff3ed] hover:text-[#b98b67]"
+                      }`}
+                    >
+                      <Icon
+                        size={
+                          16
+                        }
+                      />
+                      {
+                        item.label
+                      }
+                    </Link>
+                  );
+                }
+              )}
             </nav>
 
             <Link
@@ -139,64 +192,91 @@ export default function AdminHeader() {
               aria-label="Open Store"
               title="Open Store"
             >
-              <ExternalLink size={17} />
+              <ExternalLink
+                size={17}
+              />
             </Link>
 
             <button
               type="button"
-              onClick={handleLogout}
+              onClick={
+                handleLogout
+              }
               className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50/60 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-500 hover:text-white"
             >
-              <LogOut size={16} />
+              <LogOut
+                size={16}
+              />
               Logout
             </button>
           </div>
 
-          <div className="flex shrink-0 items-center gap-2 lg:hidden">
+          <div className="flex shrink-0 items-center gap-2 xl:hidden">
             <Link
               href="/"
               target="_blank"
               className="flex h-10 w-10 items-center justify-center rounded-full border border-[#ead8cf] bg-white text-[#6e5b55] transition hover:border-[#b98b67] hover:text-[#b98b67]"
               aria-label="Open Store"
             >
-              <ExternalLink size={16} />
+              <ExternalLink
+                size={16}
+              />
             </Link>
 
             <button
               type="button"
-              onClick={handleLogout}
+              onClick={
+                handleLogout
+              }
               className="flex h-10 w-10 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-500 hover:text-white"
               aria-label="Logout"
             >
-              <LogOut size={16} />
+              <LogOut
+                size={16}
+              />
             </button>
           </div>
         </div>
 
-        <nav className="mt-3 flex gap-2 overflow-x-auto pb-1 lg:hidden">
-          {navItems.map((item) => {
-            const Icon = item.icon;
+        <nav className="mt-3 flex gap-2 overflow-x-auto pb-1 xl:hidden">
+          {navItems.map(
+            (item) => {
+              const Icon =
+                item.icon;
 
-            const isActive =
-              item.href === "/admin"
-                ? pathname === "/admin"
-                : pathname.startsWith(item.href);
+              const isActive =
+                item.href ===
+                "/admin"
+                  ? pathname ===
+                    "/admin"
+                  : pathname.startsWith(
+                      item.href
+                    );
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold transition ${
-                  isActive
-                    ? "bg-[#2a1f1d] text-white shadow-sm"
-                    : "border border-[#ead8cf] bg-white/70 text-[#6e5b55] hover:border-[#b98b67] hover:text-[#b98b67]"
-                }`}
-              >
-                <Icon size={15} />
-                {item.label}
-              </Link>
-            );
-          })}
+              return (
+                <Link
+                  key={
+                    item.href
+                  }
+                  href={
+                    item.href
+                  }
+                  className={`inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold transition ${
+                    isActive
+                      ? "bg-[#2a1f1d] text-white shadow-sm"
+                      : "border border-[#ead8cf] bg-white/70 text-[#6e5b55] hover:border-[#b98b67] hover:text-[#b98b67]"
+                  }`}
+                >
+                  <Icon
+                    size={15}
+                  />
+                  {
+                    item.label
+                  }
+                </Link>
+              );
+            }
+          )}
         </nav>
       </div>
     </header>
