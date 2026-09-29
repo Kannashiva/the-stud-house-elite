@@ -137,8 +137,18 @@ const handleHomeClick = (
   };
 
   const closeMobileMenu = () => {
-    setMobileMenuOpen(false);
-  };
+  setMobileMenuOpen(false);
+
+  const floatingButtons =
+    document.getElementById(
+      "floating-social-buttons"
+    );
+
+  if (floatingButtons) {
+    floatingButtons.style.display =
+      "flex";
+  }
+};
 
   return (
     <header className="sticky top-0 z-50">
@@ -244,11 +254,27 @@ const handleHomeClick = (
             }
             aria-expanded={mobileMenuOpen}
             onClick={() => {
-              setSearchOpen(false);
-              setMobileMenuOpen(
-                !mobileMenuOpen
-              );
-            }}
+  setSearchOpen(false);
+
+  const nextState =
+    !mobileMenuOpen;
+
+  setMobileMenuOpen(
+    nextState
+  );
+
+  const floatingButtons =
+    document.getElementById(
+      "floating-social-buttons"
+    );
+
+  if (floatingButtons) {
+    floatingButtons.style.display =
+      nextState
+        ? "none"
+        : "flex";
+  }
+}}
             className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-[#f4e3da] hover:text-[#b98b67] lg:hidden"
           >
             {mobileMenuOpen ? (

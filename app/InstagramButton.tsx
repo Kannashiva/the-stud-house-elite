@@ -1,14 +1,13 @@
 "use client";
 
 export default function InstagramButton() {
-    
   return (
     <a
       href="https://www.instagram.com/thestudhouseelite.co"
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Instagram"
-      className="fixed bottom-24 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#8134af] text-white shadow-[0_10px_28px_rgba(0,0,0,0.18)] transition duration-300 hover:-translate-y-1 hover:scale-105"
+      className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#8134af] text-white shadow-[0_10px_28px_rgba(0,0,0,0.18)] transition duration-300 hover:-translate-y-1 hover:scale-105"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
